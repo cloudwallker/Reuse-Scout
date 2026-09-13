@@ -21,6 +21,6 @@ Claude Code：`/reuse-scout 快速模式。检查当前项目是否已有可复�
 
 ## 验证与限制
 
-本地检查的命令、结果与范围见 [测试报告](https://github.com/cloudwallker/Reuse-Scout/blob/v0.1.1-preview.1/docs/TEST_REPORT.md)。真实宿主发现、字段共存、手动入口、禁止自动触发、预算和只读行为仍需独立验收；GitHub 四项 CI 矩阵未执行。
+本地检查的命令、结果与范围见 [测试报告](https://github.com/cloudwallker/Reuse-Scout/blob/v0.1.1-preview.1/docs/TEST_REPORT.md)。真实宿主发现、字段共存、手动入口、禁止自动触发、预算和只读行为仍需独立验收；GitHub 四项 CI 矩阵的实际执行结果记录在测试报告中。
 
 这是预览版，不声明所有 Agent 兼容，不将纯指令约束当成权限沙箱。未完成四方比较或完整用量测量，不宣称效果提升或 Token/费用节省。技能采用 MIT 许可，随包保留上游版权与条款。

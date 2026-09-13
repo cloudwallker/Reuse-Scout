@@ -88,6 +88,68 @@ class BuildReleaseTests(unittest.TestCase):
         if self.output.exists():
             self.assertEqual([], list(self.output.iterdir()))
 
+    def test_source_files_accept_equivalent_resolved_boundary(self):
+        canonical_root = self.root.with_name("canonical-source").resolve()
+        original_resolve = Path.resolve
+
+        def resolve_alias(path, *args, **kwargs):
+            # 模拟 Windows 将整条路径的短名祖先展开；目录遍历和 lstat 仍使用真实夹具。
+            try:
+                relative = path.relative_to(self.root)
+            except ValueError:
+                return original_resolve(path, *args, **kwargs)
+            return canonical_root / relative
+
+        with mock.patch.object(Path, "resolve", new=resolve_alias):
+            try:
+                sources = self.builder._source_files(self.root)
+            except self.builder.BuildError as exc:
+                self.fail("等价路径别名不应被拒绝：" + str(exc))
+        self.assertEqual({name: self.package / name for name in MEMBERS}, sources)
+
+    def test_source_files_reject_resolved_escape(self):
+        root = self.root.resolve()
+        package = root / PACKAGE
+        escaped = package / "LICENSE"
+        original_resolve = Path.resolve
+
+        def resolve_escape(path, *args, **kwargs):
+            if path == escaped:
+                return package.with_name("reuse-scout-outside") / "LICENSE"
+            return original_resolve(path, *args, **kwargs)
+
+        with mock.patch.object(Path, "resolve", new=resolve_escape):
+            with self.assertRaisesRegex(self.builder.BuildError, "源路径越出"):
+                self.builder._source_files(root)
+        self.assert_no_artifacts()
+
+    @unittest.skipUnless(os.name == "nt", "Windows 短路径测试")
+    def test_windows_short_path_root_builds_archive(self):
+        import ctypes
+        from ctypes import wintypes
+
+        get_short_path = ctypes.WinDLL("kernel32", use_last_error=True).GetShortPathNameW
+        get_short_path.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+        get_short_path.restype = wintypes.DWORD
+        long_root = self.root.resolve()
+        required = get_short_path(str(long_root), None, 0)
+        if not required:
+            self.skipTest("当前平台无法获取合成目录短路径：" + str(ctypes.get_last_error()))
+        buffer = ctypes.create_unicode_buffer(required)
+        written = get_short_path(str(long_root), buffer, required)
+        self.assertTrue(0 < written < required, "获取 Windows 合成目录短路径失败")
+        short_root = Path(buffer.value)
+        if short_root == long_root:
+            self.skipTest("当前临时目录未提供不同的 Windows 8.3 短路径")
+        self.assertTrue(short_root.samefile(long_root))
+        self.assertEqual(long_root, short_root.resolve())
+        result = self.cli("--root", str(short_root), "--version", VERSION,
+                          "--output-dir", str(self.output))
+        self.assertEqual(0, result.returncode, result.stderr)
+        with zipfile.ZipFile(self.output / FILENAME) as archive:
+            self.assertEqual(["reuse-scout/" + name for name in MEMBERS],
+                             archive.namelist())
+
     def test_archive_has_only_nine_declared_files_and_round_trips_bytes(self):
         result = self.build_cli()
         self.assertEqual(0, result.returncode, result.stderr)

@@ -87,13 +87,15 @@ def _source_files(root: Path) -> dict[str, Path]:
         path = root / relative
         if path.exists() or path.is_symlink():
             _check_ancestors(path)
+    # 先检查原始路径的链接，再统一解析比较边界（Windows 短路径可展开为长路径）。
+    boundary = package.resolve()
     pending = [package]
     found = {}
     while pending:
         directory = pending.pop()
         for path in directory.iterdir():
             info = _source_stat(path)
-            if not _within(path.resolve(), package):
+            if not _within(path.resolve(), boundary):
                 raise BuildError("源路径越出技能分发目录：" + str(path))
             if stat.S_ISDIR(info.st_mode):
                 pending.append(path)

@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   validate:
-    # 2026-09-13：此矩阵尚未在 GitHub Actions 运行，不代表已通过。
+    # 各矩阵项的实际结果以 GitHub Actions 对应提交的运行记录为准。
     # 检出/准备 Python/安装固定开发依赖需要网络；测试与校验本身离线。
     # 测试仅用临时合成数据，无个人 token、外部搜索或候选项目执行。
     runs-on: ${{ matrix.os }}

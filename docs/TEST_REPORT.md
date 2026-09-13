@@ -124,3 +124,21 @@ ea63de6099876f40d78eceee3aab74679766ba4369f7cffbcd4423a267ad6833
 - 提交前敏感模式/个人路径扫描未命中，未发现超过 1 MiB 的候选文件；扫描不代表完整安全保证。原始需求与历史报告保留。
 
 此处只记录上传前已发生的检查。远程提交和 CI 结果以对应 GitHub 实际记录及后续补充为准，不把本地通过记为远程通过。
+
+## 首次上传与远程 CI 发现
+
+源码已上传到 main，初始提交为 [1b31427486b164fa1a5a2802f86b8ac77fb2483e](https://github.com/cloudwallker/Reuse-Scout/commit/1b31427486b164fa1a5a2802f86b8ac77fb2483e)，包含 37 个文件与中英文 README。远程文件树、main 提交与本地一致；工作区、暂存区及已提交内容的 Git 空白检查均无诊断。未创建标签或 GitHub Release。
+
+[首次 CI](https://github.com/cloudwallker/Reuse-Scout/actions/runs/34753827385) 已实际运行：Ubuntu 的 Python 3.9/3.12 两项通过，Windows 的 Python 3.9/3.12 两项失败。Windows Python 3.12 日志记录 93 个测试方法，12 个失败断言及 1 个错误；多个失败由打包器提早拒绝正常源目录引起。
+
+已定位到 Windows 短路径名：候选路径经 resolve 展开为长路径，比较边界仍使用短路径，导致同一目录被误判为越界。这是打包工具兼容性缺陷，不是技能研究行为结果；修复与复验结果另行记录，保留本次失败证据。
+
+## Windows 短路径修复后的本地验证
+
+修复仅在打包器完成原始祖先路径的链接检查后，对比较边界调用 resolve；遍历、lstat 和成员命名继续使用原始路径。新增等价别名正例、解析越界负例及真实 Windows 短路径构建用例。旧实现的两项定向回归中，别名正例实际失败、越界负例通过；修复后定向 28 项为 27 通过、1 跳过。
+
+主代理重新完整运行 `python -X utf8 -B -m unittest discover -s tests -v`：**96 项，95 通过、1 跳过、0 失败，25.263 秒，退出 0**。本机临时卷未提供不同的 8.3 短名，因此真实短名用例跳过；别名模拟正例、越界负例和原有真实符号链接/Windows 联接检查均通过。真实短名用例也纳入远程 Windows CI，不能将本地跳过写成通过。
+
+结构校验再次退出 0；使用 `--output-dir .test-artifacts/github-upload-fixed-build` 的本地构建退出 0。修复没有更改可分发技能文件。中英文 README 与安装文档共 6 个 PowerShell 代码块经 AST 解析无语法错误，没有执行真实安装。
+
+后续远程结果应查看 [main 的 GitHub Actions 记录](https://github.com/cloudwallker/Reuse-Scout/actions/workflows/validate.yml?query=branch%3Amain)，并核对对应提交；本节记录的是修复提交前已经完成的本地验证。
