@@ -1,0 +1,7 @@
+interface:
+  display_name: "Reuse Scout"
+  short_description: "手动调用的工程研究：先查本地，按数量预算调查功能复用或依赖故障"
+  default_prompt: "使用 $reuse-scout，标准模式，先检查当前项目，再给出有证据的复用或故障调查建议，只研究、不修改代码。"
+
+policy:
+  allow_implicit_invocation: false

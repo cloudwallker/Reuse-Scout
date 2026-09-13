@@ -1,0 +1,4 @@
+# 仅仓库开发/离线结构检查需要；安装技能无需 Python 依赖。
+PyYAML==6.0.3
+markdown-it-py==2.2.0
+mdurl==0.1.2

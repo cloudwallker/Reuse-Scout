@@ -1,0 +1,17 @@
+# Python 本地环境与缓存
+.venv/
+__pycache__/
+*.py[cod]
+
+# 测试、覆盖率与本地构建产物
+.pytest_cache/
+.coverage
+htmlcov/
+.test-artifacts/
+
+# 本项目的本地技能安装副本；共享技能源仍在 skills/
+/.agents/skills/reuse-scout/
+/.claude/skills/reuse-scout/
+
+# 一次性执行记录；长期约束已归入 docs/DESIGN.md 和 docs/RELEASING.md
+/docs/RELEASE_PLAN.md
