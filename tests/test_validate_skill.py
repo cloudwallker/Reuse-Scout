@@ -368,6 +368,26 @@ class ValidatorTests(unittest.TestCase):
         self.append_skill("[编码文件名](references/synthetic%23part.md)")
         self.assertEqual([], self.validate(self.root))
 
+    @unittest.skipIf(os.name == "nt", "Windows filenames cannot contain question marks")
+    def test_encoded_question_mark_is_a_filename_character(self):
+        self.write(PACKAGE / "references/synthetic?part.md", "# synthetic\n")
+        self.append_skill("[encoded](references/synthetic%3Fpart.md)")
+        self.assertEqual([], self.validate(self.root))
+
+    def test_encoded_question_mark_does_not_start_query(self):
+        self.append_skill("[encoded](references/feature-reuse.md%3Fpart)")
+        self.assert_invalid("LINK")
+
+    def test_links_require_exact_archive_member_spelling(self):
+        for target in ("references/FEATURE-REUSE.md", "references/feature-reuse.md."):
+            with self.subTest(target=target):
+                self.write(PACKAGE / "SKILL.md", VALID_SKILL + "[invalid](" + target + ")\n")
+                self.assert_invalid("LINK")
+
+    def test_unused_reference_requires_exact_archive_member_spelling(self):
+        self.append_skill("[unused]: references/FEATURE-REUSE.md")
+        self.assert_invalid("LINK")
+
     def test_broken_inline_reference_image_and_unused_definition(self):
         for content in ("[缺失](references/missing.md)", "![缺失](assets/missing.png)",
                         "[缺失][target]\n\n[target]: missing.md", "[unused]: missing.md"):
@@ -529,6 +549,50 @@ class ValidatorTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stdout + result.stderr)
         self.assertNotIn(value, result.stdout + result.stderr)
 
+    def test_explicit_yaml_scalar_constructor_failures_are_controlled_and_redacted(self):
+        secret = "ghp_" + "T" * 36
+        for scalar in ("!!timestamp synthetic-not-a-date", "!!int ''", "!!float ''"):
+            with self.subTest(scalar=scalar):
+                self.write(PACKAGE / "SKILL.md", VALID_SKILL.replace(
+                    VALID_SKILL.splitlines()[2], "description: " + scalar + " # " + secret))
+                errors = self.assert_invalid("YAML")
+                self.assertNotIn(secret, "\n".join(errors))
+                result = self.cli("--root", str(self.root))
+                self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+                self.assertIn("YAML", result.stderr)
+                self.assertNotIn("Traceback", result.stdout + result.stderr)
+                self.assertNotIn(secret, result.stdout + result.stderr)
+
+    def test_explicit_yaml_float_overflow_api_is_controlled_and_redacted(self):
+        secret = "ghp_" + "O" * 36
+        scalar = "!!float " + ":".join(["1"] * 180)
+        self.write(PACKAGE / "SKILL.md", VALID_SKILL.replace(
+            VALID_SKILL.splitlines()[2], "description: " + scalar + " # " + secret))
+        errors = self.assert_invalid("YAML")
+        self.assertNotIn(secret, "\n".join(errors))
+
+    def test_explicit_yaml_float_overflow_cli_is_controlled_and_redacted(self):
+        secret = "ghp_" + "O" * 36
+        scalar = "!!float " + ":".join(["1"] * 180)
+        self.write(PACKAGE / "SKILL.md", VALID_SKILL.replace(
+            VALID_SKILL.splitlines()[2], "description: " + scalar + " # " + secret))
+        result = self.cli("--root", str(self.root))
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn("YAML", result.stderr)
+        self.assertNotIn("Traceback", result.stdout + result.stderr)
+        self.assertNotIn(secret, result.stdout + result.stderr)
+
+    def test_valid_explicit_yaml_float_reaches_field_validation(self):
+        self.write(PACKAGE / "SKILL.md", VALID_SKILL.replace(
+            VALID_SKILL.splitlines()[2], "description: !!float '1.5'"))
+        errors = self.assert_invalid("FIELD")
+        self.assertFalse(any(error.startswith("YAML ") for error in errors))
+
+    def test_explicit_yaml_string_scalar_is_valid(self):
+        self.write(PACKAGE / "SKILL.md", VALID_SKILL.replace(
+            VALID_SKILL.splitlines()[2], "description: !!str synthetic-skill"))
+        self.assertEqual([], self.validate(self.root))
+
     def test_invalid_utf8_is_reported_without_traceback(self):
         (self.package / "references/feature-reuse.md").write_bytes(b"\xff\xfe")
         self.assert_invalid("READ")
@@ -549,6 +613,15 @@ class ValidatorTests(unittest.TestCase):
     def test_cli_bad_arguments_exit_two(self):
         result = self.cli("--unknown-argument")
         self.assertEqual(2, result.returncode)
+
+    def test_cli_unknown_argument_name_and_value_are_redacted(self):
+        secret = "ghp_" + "C" * 36
+        for args in (("--unknown-" + secret,), ("--unknown", secret)):
+            with self.subTest(args=args):
+                result = self.cli(*args)
+                self.assertEqual(2, result.returncode)
+                self.assertNotIn(secret, result.stdout + result.stderr)
+                self.assertIn("[redacted]", result.stderr)
 
     def test_cli_default_root_is_script_repository_not_cwd(self):
         copied = self.root / "tools/validate_skill.py"

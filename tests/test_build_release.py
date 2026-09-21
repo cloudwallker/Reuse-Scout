@@ -5,6 +5,7 @@ import hashlib
 import importlib
 import io
 import os
+import posixpath
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,6 +14,9 @@ import tempfile
 import unittest
 from unittest import mock
 import zipfile
+from urllib.parse import unquote, urlsplit
+
+from markdown_it import MarkdownIt
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "tools" / "build_release.py"
@@ -38,6 +42,12 @@ def make_fixture(root):
         "disable-model-invocation: true\nmetadata:\n  version: '0.1.1-preview.1'\n"
         "---\n# 合成技能\n"
         "[参考](references/feature-reuse.md)\n"
+    )
+    content["references/feature-reuse.md"] += (
+        "\n[root](../SKILL.md)\n[peer][peer]\n\n[peer]: bug-investigation.md\n"
+    )
+    content["references/bug-investigation.md"] += (
+        "\n[unused]: ../assets/report-template.md\n"
     )
     content["agents/openai.yaml"] = (
         "interface:\n  display_name: Reuse Scout\n  short_description: 合成描述\n"
@@ -161,6 +171,42 @@ class BuildReleaseTests(unittest.TestCase):
             for name in MEMBERS:
                 self.assertEqual((self.package / name).read_bytes(),
                                  (extracted / "reuse-scout" / name).read_bytes())
+            # Resolve every local Markdown target in the ZIP namespace itself.
+            archive_members = set(archive.namelist())
+            markdown = MarkdownIt("commonmark")
+            checked = set()
+            for source in archive_members:
+                if not source.endswith(".md"):
+                    continue
+                environment = {}
+                tokens = markdown.parse(archive.read(source).decode("utf-8-sig"), environment)
+                targets = []
+
+                def visit(items):
+                    for token in items:
+                        if token.type in ("link_open", "image"):
+                            targets.append(token.attrGet(
+                                "href" if token.type == "link_open" else "src"))
+                        if token.children:
+                            visit(token.children)
+
+                visit(tokens)
+                targets.extend(reference["href"] for reference
+                               in environment.get("references", {}).values())
+                for target in targets:
+                    if target is None:
+                        continue
+                    parts = urlsplit(target)
+                    if parts.scheme or parts.netloc or not parts.path:
+                        continue
+                    destination = posixpath.normpath(posixpath.join(
+                        posixpath.dirname(source),
+                        unquote(parts.path).replace("\\", "/")))
+                    self.assertIn(destination, archive_members,
+                                  source + " links to missing ZIP member " + target)
+                    checked.add((source, target))
+            self.assertGreaterEqual(len(checked), 4)
+            self.assertGreaterEqual(len({source for source, _ in checked}), 3)
             self.assertIsNone(archive.testzip())
         expected_hash = hashlib.sha256((self.output / FILENAME).read_bytes()).hexdigest()
         self.assertEqual(expected_hash + "  " + FILENAME + "\n",
@@ -198,6 +244,23 @@ class BuildReleaseTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("FIELD", result.stderr)
         self.assert_no_artifacts()
+
+    def test_links_to_nonexistent_exact_zip_members_block_archive(self):
+        skill = self.package / "SKILL.md"
+        original = skill.read_text(encoding="utf-8")
+        for index, target in enumerate(("references/FEATURE-REUSE.md", "references/feature-reuse.md.")):
+            with self.subTest(target=target):
+                self.output = Path(self.temp.name) / ("output-" + str(index))
+                skill.write_text(original + "[invalid](" + target + ")\n", encoding="utf-8")
+                result = self.build_cli()
+                self.assertEqual(1, result.returncode)
+                self.assertIn("LINK", result.stderr)
+                self.assert_no_artifacts()
+
+    def test_help_example_uses_current_preview_version(self):
+        result = self.cli("--help")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("0.2.0-preview.1", result.stdout)
 
     def test_package_version_is_required_and_must_be_nonempty_string(self):
         skill = self.package / "SKILL.md"

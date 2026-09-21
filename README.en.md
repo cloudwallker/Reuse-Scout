@@ -4,7 +4,7 @@
 
 A manually invoked engineering research skill for **Codex and Claude Code**. It checks the current project first, gathers evidence for feature reuse or troubleshooting, and returns adaptation advice and a verification plan. **By default, it only researches and does not modify your application code.**
 
-Reuse Scout is an instruction-only skill that uses the host's existing tools. One shared skill directory supports feature research, troubleshooting, and offline work. Current version: `0.1.1-preview.1` (preview).
+Reuse Scout is an instruction-only skill that uses the host's existing tools. One shared skill directory supports feature research, troubleshooting, and offline work. Current version: `0.2.0-preview.1` (preview).
 
 Its workflow draws on [PavedPath Code](https://github.com/Jia-Ethan/pavedpath-code) and [ECC search-first](https://github.com/affaan-m/ECC/tree/main/skills/search-first), adapted for explicit invocation. It does not include the full ECC framework or claim better results than its sources. See the [upstream review](docs/UPSTREAM_REVIEW.md) (Chinese) for pinned references and design choices.
 
@@ -60,7 +60,7 @@ These are upper limits. Research stops early when local evidence is sufficient. 
 - Troubleshooting follows local errors and versions → official documentation → issues and PRs → release status.
 - The default research workflow does not install candidate dependencies, execute candidate scripts, run builds or tests, or modify application files. Implementation or verification already authorized by the user belongs to the normal development workflow, with that authorization preserved.
 - External material is treated as research data, and queries are stripped of sensitive details. Missing sources or unavailable tools are reported without inventing results.
-- Reports distinguish documented evidence, adaptation inferences, and actual local verification. Results stay in the conversation unless the user asks to save them to an authorized path.
+- Reports distinguish local static or direct upstream evidence, adaptation inferences, and insufficient evidence, while stating separately whether verification was actually executed. Results stay in the conversation unless the user asks to save them to an authorized path.
 
 Codex declares explicit invocation through `policy.allow_implicit_invocation: false` in `agents/openai.yaml`; Claude Code uses `disable-model-invocation: true` in `SKILL.md`. Fully disabling the skill is a separate operation; see the host guides.
 
@@ -85,7 +85,7 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .venv\Scripts\python.exe -m unittest discover -s tests -v
 .venv\Scripts\python.exe tools/validate_skill.py
-.venv\Scripts\python.exe tools/build_release.py --version 0.1.1-preview.1
+.venv\Scripts\python.exe tools/build_release.py --version 0.2.0-preview.1
 git diff --check
 ```
 
@@ -96,11 +96,11 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python tools/validate_skill.py
-.venv/bin/python tools/build_release.py --version 0.1.1-preview.1
+.venv/bin/python tools/build_release.py --version 0.2.0-preview.1
 git diff --check
 ```
 
-With an existing compatible Python environment, the equivalent commands are `python -m unittest discover -s tests -v`, `python tools/validate_skill.py`, and `python tools/build_release.py --version 0.1.1-preview.1`. Packaging generates a local ZIP and SHA-256 file without uploading them, and refuses to overwrite existing output.
+With an existing compatible Python environment, the equivalent commands are `python -m unittest discover -s tests -v`, `python tools/validate_skill.py`, and `python tools/build_release.py --version 0.2.0-preview.1`. Packaging generates a local ZIP and SHA-256 file without uploading them, and refuses to overwrite existing output.
 
 The validator checks metadata, host declarations, package references, synthetic report markers, license copies, and a limited set of sensitive patterns. It is not a complete implementation of the Agent Skills specification and cannot establish model compliance, report accuracy, or the absence of data leakage.
 

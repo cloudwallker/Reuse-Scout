@@ -1,0 +1,13 @@
+{
+  "synthetic": true,
+  "kind": "package_detail",
+  "package": "csv-browser-demo",
+  "version": "1.2.0",
+  "url": "https://packages.example.invalid/csv-browser-demo/1.2.0",
+  "official_doc": "Browser ESM API: makeCsv(rows) returns a CSV string; no network transfer.",
+  "license": "MIT",
+  "runtime": [
+    "browser"
+  ],
+  "module": "ESM"
+}

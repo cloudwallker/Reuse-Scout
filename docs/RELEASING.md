@@ -1,6 +1,6 @@
 # 发布顺序
 
-目标仓库：[cloudwallker/Reuse-Scout](https://github.com/cloudwallker/Reuse-Scout)。准备版本 `0.1.1-preview.1`，计划标签 `v0.1.1-preview.1`（尚未创建）。**只有维护者明确允许后才能推送、创建远程标签或发布 GitHub Release。** 本地打包不等于已发布。
+目标仓库：[cloudwallker/Reuse-Scout](https://github.com/cloudwallker/Reuse-Scout)。第二版版本 `0.2.0-preview.1`，目标标签 `v0.2.0-preview.1`。实际标签、附件和发布状态以 GitHub Release 页面为准。**只有维护者明确允许后才能推送、创建远程标签或发布 GitHub Release。** 本地打包不等于已发布。
 
 ## 1. 确认支持范围
 
@@ -9,6 +9,8 @@
 ## 2. 检查源码和许可
 
 在克隆根目录确认技能版本、CHANGELOG 与发布说明一致，只将 `skills/reuse-scout/` 纳入技能 ZIP，保留 LICENSE 和 THIRD_PARTY_NOTICES.md，根目录与包内副本保持字节一致。
+
+每次推送和公开 Release 前，重新检查该次实际上传集合：暂存区/提交树、待推送提交信息、发布说明以及 ZIP 内每个成员。扫描个人绝对路径、私人邮箱、内网地址、API Key、Token、私钥及凭据配置；检查文件名和正文，不只检查 Git 差异。疑似项先人工核实，只记录文件位置与类别，不在日志回显值。合成哨兵、公开上游署名和 GitHub noreply 提交邮箱分别核对；发现真实敏感内容先移除并复查，未通过不得推送或公开发布。记录对应提交和附件摘要，不能沿用另一个版本的检查结论。
 
 核对 Git 暂存清单，排除本地 `.agents/skills/reuse-scout/`、`.claude/skills/reuse-scout/`、一次性执行记录及 `.test-artifacts/`、虚拟环境、缓存、私有日志和本机地址。忽略规则不影响已跟踪文件，需人工确认。复查实际引入范围、名称与署名。
 
@@ -37,22 +39,24 @@ git diff --check
 在克隆根目录运行：
 
 ```text
-python tools/build_release.py --version 0.1.1-preview.1
+python tools/build_release.py --version 0.2.0-preview.1
 ```
 
 默认输出：
 
 ```text
-.test-artifacts/releases/reuse-scout-0.1.1-preview.1.zip
-.test-artifacts/releases/reuse-scout-0.1.1-preview.1.zip.sha256
+.test-artifacts/releases/reuse-scout-0.2.0-preview.1.zip
+.test-artifacts/releases/reuse-scout-0.2.0-preview.1.zip.sha256
 ```
 
 拒绝覆盖既有输出；重新构建可用 `--output-dir` 指定新目录，或确认后手动移走旧产物。构建期间保持源不变。输出文件系统须支持硬链接，如常规 NTFS/Linux 文件系统，以排他方式放置完整产物。
 
 解包到临时目录，核对 `reuse-scout/` 前缀下的 9 文件、源字节、许可、元数据与引用可迁移性。SHA-256 用于核对内容，不证明发布者身份或宿主行为。
 
-## 6. 等待明确发布允许
+## 6. 发布授权与远程核验
 
-先给维护者查看 [发布说明](RELEASE_NOTES.md)、修改清单、真实测试结果、未验证项、ZIP 和 SHA-256。允许范围应包含目标仓库、版本与公开产物。
+本次第二版已获维护者明确允许：提交、推送到上述仓库，创建对应标签和 GitHub 预发布，并公开技能 ZIP 与 SHA-256。该允许不自动延伸到后续版本；已有同一范围的允许无需重复索取。
 
-只有获得允许后，才保护本地修改并完成提交/推送、远程标签和 GitHub Release；预览版勾选预发布，上传 ZIP 与 `.sha256`，使用已审阅说明。再核对标签对应提交、下载附件与本地摘要，记录实际链接。未获允许时保持本地准备状态。
+准备可审阅的 [发布说明](RELEASE_NOTES.md)、修改清单、真实测试结果、未验证项、ZIP 和 SHA-256。允许范围应包含目标仓库、版本与公开产物。
+
+只有获得允许后，才保护本地修改并完成提交/推送、远程标签和 GitHub Release；预览版勾选预发布，上传 ZIP 与 `.sha256`，使用已审阅说明。发布前确认最终提交的四项 CI 均成功，标签必须指向该提交；先以草稿附齐两个文件并核对预发布标记，再公开。随后下载附件核对源字节与本地摘要，记录实际链接。已有标签和附件不覆盖，失败时停止后续发布步骤。未获允许时保持本地准备状态。

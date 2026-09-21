@@ -38,7 +38,7 @@ jobs:
       - name: Validate distributable structure offline
         run: python tools/validate_skill.py
       - name: Build preview package locally
-        run: python tools/build_release.py --version 0.1.1-preview.1
+        run: python tools/build_release.py --version 0.2.0-preview.1
       - name: Check working tree whitespace
         run: git diff --check
       - name: Check current commit whitespace

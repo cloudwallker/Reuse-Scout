@@ -1,0 +1,9 @@
+{
+  "name": "synthetic-private-csv-app",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "tiny-ui-demo": "1.0.0"
+  },
+  "description": "SYNTHETIC ONLY: browser ESM app; CSV export absent"
+}

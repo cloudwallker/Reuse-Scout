@@ -10,7 +10,6 @@
 
 from __future__ import annotations
 
-import argparse
 import hashlib
 import importlib.util
 import os
@@ -38,12 +37,6 @@ class BuildError(RuntimeError):
         super().__init__(validate_skill._redact(message))
 
 
-class _ArgumentParser(argparse.ArgumentParser):
-    def _print_message(self, message, file=None):
-        # argparse 自身会在非法值、未知参数和 usage 中拼入用户输入。
-        super()._print_message(validate_skill._redact(message) if message else message, file)
-
-
 def _print_redacted(message: str, file=None):
     print(validate_skill._redact(message), file=file)
 
@@ -53,7 +46,7 @@ def _version(value: str) -> str:
     pattern = number + r"\." + number + r"\." + number
     pattern += r"(?:-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*)?"
     if len(value) > 80 or not re.fullmatch(pattern, value):
-        raise ValueError("版本应为安全的三段数字及可选预览后缀，如 0.1.1-preview.1")
+        raise ValueError("版本应为安全的三段数字及可选预览后缀，如 0.2.0-preview.1")
     return value
 
 
@@ -183,9 +176,9 @@ def build_release(root: Path, version: str, output_dir: Path = None) -> tuple[Pa
 
 
 def main(argv=None) -> int:
-    parser = _ArgumentParser(description=__doc__)
+    parser = validate_skill._ArgumentParser(description=__doc__)
     parser.add_argument("--version", required=True, type=_version,
-                        help="版本号，如 0.1.1-preview.1")
+                        help="版本号，如 0.2.0-preview.1")
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1],
                         help="源仓库根目录，默认为脚本所属仓库")
     parser.add_argument("--output-dir", type=Path,

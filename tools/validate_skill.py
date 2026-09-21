@@ -18,6 +18,7 @@ import argparse
 from html.parser import HTMLParser
 import os
 from pathlib import Path
+import posixpath
 import re
 import sys
 from typing import Any
@@ -59,6 +60,12 @@ NEGATIONS = re.compile(
     r"[\s\"'“「『`*_]*$"
 )
 CLAUSE_BOUNDARY = re.compile(r"[。；;！？!?\n，,]|但是|然而|不过|但")
+
+
+class _ArgumentParser(argparse.ArgumentParser):
+    def _print_message(self, message, file=None):
+        # argparse includes supplied option names and values in its diagnostics.
+        super()._print_message(_redact(message) if message else message, file)
 
 
 class DependencyError(RuntimeError):
@@ -137,6 +144,7 @@ def validate(repo_root: Path) -> list[str]:
     package = root / PACKAGE
     texts: dict[Path, str] = {}
     data: dict[Path, bytes] = {}
+    members: set[str] = set()
 
     def issue(code: str, path: Path, message: str, line: int = 0):
         try:
@@ -194,6 +202,8 @@ def validate(repo_root: Path) -> list[str]:
                 if not safe:
                     issue("PATH", path, "目录项或符号链接逃逸技能包")
                     continue
+                if name in files:
+                    members.add(path.relative_to(package).as_posix())
                 if name in files and (path.suffix.lower() in (".md", ".yaml", ".yml")
                                       or path.name == "LICENSE"):
                     read(path, package)
@@ -201,7 +211,7 @@ def validate(repo_root: Path) -> list[str]:
     def parse_yaml(path: Path, text: str, line_offset: int = 0):
         try:
             return yaml.load(text, Loader=UniqueSafeLoader)
-        except (yaml.YAMLError, RecursionError, ValueError) as exc:
+        except (yaml.YAMLError, RecursionError, ValueError, AttributeError, IndexError, OverflowError) as exc:
             mark = getattr(exc, "problem_mark", None)
             line = mark.line + 1 + line_offset if mark is not None else 0
             # 不输出解析异常的原文、问题行或键值，避免泄露合成/真实凭证。
@@ -334,10 +344,13 @@ def validate(repo_root: Path) -> list[str]:
                 issue("LINK", path, "图标必须引用包内的实际文件", line)
             return
         try:
-            resolved = ((base or path.parent) / unquote(parts.path).replace("\\", "/")).resolve()
+            decoded_path = unquote(parts.path).replace("\\", "/")
+            source_base = (base or path.parent).relative_to(package).as_posix()
+            member = posixpath.normpath(posixpath.join(source_base, decoded_path))
+            resolved = ((base or path.parent) / decoded_path).resolve()
             if not _within(resolved, package):
                 issue("LINK", path, "本地链接逃逸技能包或指向未分发文件", line)
-            elif not resolved.is_file():
+            elif not resolved.is_file() or member not in members:
                 issue("LINK", path, "本地链接目标文件不存在或指向目录", line)
         except (OSError, RuntimeError, ValueError):
             issue("LINK", path, "无法解析本地链接路径", line)
@@ -384,7 +397,7 @@ def validate(repo_root: Path) -> list[str]:
 
 
 def main(argv=None) -> int:
-    argument_parser = argparse.ArgumentParser(description=__doc__)
+    argument_parser = _ArgumentParser(description=__doc__)
     argument_parser.add_argument("--root", type=Path,
                                  default=Path(__file__).resolve().parents[1],
                                  help="待校验仓库根目录，默认为脚本所属仓库")

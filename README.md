@@ -4,7 +4,7 @@
 
 手动调用的工程研究技能：先查当前项目，再按功能复用或故障调查收集证据，输出适配建议和验证计划。**默认只研究，不修改目标业务代码。**
 
-面向 **Codex、Claude Code** 的手动调用流程，维护一份公共技能目录。当前版本为 `0.1.1-preview.1`（预览版），包含功能复用研究、故障调查和离线模式。
+面向 **Codex、Claude Code** 的手动调用流程，维护一份公共技能目录。当前版本为 `0.2.0-preview.1`（预览版），包含功能复用研究、故障调查和离线模式。
 
 参考并面向手动调用整合 [PavedPath Code](https://github.com/Jia-Ethan/pavedpath-code) 与 [ECC search-first](https://github.com/affaan-m/ECC/tree/main/skills/search-first)，未引入完整 ECC，也未证明效果优于上游。固定来源和取舍见 [上游核对](docs/UPSTREAM_REVIEW.md)。
 
@@ -56,7 +56,7 @@ Claude Code：
 - 故障路线：本地错误/版本 → 官方文档 → Issue/PR → 发布状态。
 - 不自动安装候选依赖、执行候选脚本、运行构建测试或修改业务文件；用户已授权的实施/验证交给普通开发流程，不重复索要同一步骤授权。
 - 外部材料视为研究数据，查询先脱敏；来源缺失或工具受限时说明限制，不编造结果。
-- 区分文档证据、适配推断与真实本地验证；默认对话报告，用户要求保存才写指定路径。
+- 分别说明本地静态或上游直接证据、适配推断或证据不足，以及是否实际执行验证；默认对话报告，用户要求保存才写指定路径。
 
 Codex 通过 openai.yaml 的 `policy.allow_implicit_invocation: false` 声明手动调用；Claude Code 通过 SKILL.md 的 `disable-model-invocation: true` 声明。完全停用与不自动触发不同，见各宿主说明。
 
@@ -67,7 +67,7 @@ Codex 通过 openai.yaml 的 `policy.allow_implicit_invocation: false` 声明手
 ```text
 python -m unittest discover -s tests -v
 python tools/validate_skill.py
-python tools/build_release.py --version 0.1.1-preview.1
+python tools/build_release.py --version 0.2.0-preview.1
 ```
 
 需要开发环境时，在项目内创建虚拟环境，不全局安装：

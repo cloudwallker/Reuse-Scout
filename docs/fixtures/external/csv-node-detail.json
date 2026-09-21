@@ -1,0 +1,14 @@
+{
+  "synthetic": true,
+  "kind": "package_detail",
+  "package": "csv-node-demo",
+  "version": "2.0.0",
+  "url": "https://packages.example.invalid/csv-node-demo/2.0.0",
+  "official_doc": "Node.js streams only. Requires fs and cannot run in a browser. No browser bundle.",
+  "license": "MIT",
+  "runtime": [
+    "Node.js"
+  ],
+  "module": "CommonJS",
+  "conflict": "Search summary says browser support; this direct body says Node.js only."
+}
