@@ -16,15 +16,14 @@ htmlcov/
 # 一次性执行记录；长期约束已归入 docs/DESIGN.md 和 docs/RELEASING.md
 /docs/RELEASE_PLAN.md
 
-# Local development material; keep the public repository source-only
+# Local development and internal release material
 **/superpowers/
 **/tests/
 **/test/
 /.github/
-/docs/
-/benchmarks/
-/artifacts/
-/e2e/
-/examples/
 /AGENTS.md
 /tools/
+/CODEX_REUSE_SCOUT_TASK.md
+/docs/TEST_REPORT*.md
+/docs/RELEASING.md
+/docs/fixtures/
