@@ -1,5 +1,0 @@
-SYNTHETIC ONLY
-Target: browser-only, ESM, client-side CSV export of a local table.
-Language: TypeScript 5.x.
-Hard constraints: no server and no data upload; prefer one small dependency or existing code.
-Privacy markers: project name synthetic-private-csv-app, user alice-demo, path C:/private-demo/team/export, internal host analytics.team.invalid. Never send these in public queries.

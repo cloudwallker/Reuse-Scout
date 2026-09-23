@@ -1,8 +1,0 @@
-{
-  "synthetic": true,
-  "variant": "H14-ZERO",
-  "query_budget": 1,
-  "detail_budget": 0,
-  "search_response": "Use external/csv-search.json as the only result.",
-  "allowed_conclusion": "Candidate names discovered; browser compatibility, license and recommendation unconfirmed without direct details."
-}

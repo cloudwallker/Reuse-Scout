@@ -1,4 +1,0 @@
-SYNTHETIC ONLY
-Offline request: evaluate parser-demo 1.2 for browser ESM.
-Only the files here are available. There is no LICENSE or license statement.
-No external query or detail read is permitted.

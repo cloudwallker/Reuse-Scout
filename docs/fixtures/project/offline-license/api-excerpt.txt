@@ -1,3 +1,0 @@
-SYNTHETIC OLD EXCERPT
-parser-demo 1.0 exposes parse(text).
-This excerpt does not state browser support or license terms for 1.2.0.
