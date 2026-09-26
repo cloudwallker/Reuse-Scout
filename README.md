@@ -1,8 +1,16 @@
 # Reuse Scout
 
-简体中文 | [English](README.en.md)
+### Engineering research for Codex and Claude Code
 
-手动调用的工程研究技能：先查当前项目，再按功能复用或故障调查收集证据，输出适配建议和验证计划。**默认只研究，不修改目标业务代码。**
+**Find reusable code or investigate failures, starting with your project and returning recommendations with evidence, adaptation advice, and a verification plan.**
+
+**从当前项目出发寻找可复用代码或调查故障，给出有证据支撑的建议、适配思路和验证计划。**
+
+[English](README.en.md) | 简体中文
+
+[安装](#安装) · [调用](#调用) · [延伸阅读](#延伸阅读)
+
+需要工程研究时手动调用。**默认只研究，不修改目标业务代码。**
 
 面向 **Codex、Claude Code** 的手动调用流程，维护一份公共技能目录。当前版本为 `0.2.0-preview.1`（预览版），包含功能复用研究、故障调查和离线模式。
 

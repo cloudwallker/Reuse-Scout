@@ -1,8 +1,14 @@
 # Reuse Scout
 
-[简体中文](README.md) | English
+### Engineering research for Codex and Claude Code
 
-A manually invoked engineering research skill for **Codex and Claude Code**. It checks the current project first, gathers evidence for feature reuse or troubleshooting, and returns adaptation advice and a verification plan. **By default, it only researches and does not modify your application code.**
+**Find reusable code or investigate failures, starting with your project and returning recommendations with evidence, adaptation advice, and a verification plan.**
+
+English | [简体中文](README.md)
+
+[Install](#install) · [Invoke](#invoke) · [Research boundaries](#research-and-output-boundaries)
+
+Invoke Reuse Scout manually when you need engineering research. **By default, it only researches and does not modify your application code.**
 
 Reuse Scout is an instruction-only skill that uses the host's existing tools. One shared skill directory supports feature research, troubleshooting, and offline work. Current version: `0.2.0-preview.1` (preview).
 
