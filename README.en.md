@@ -14,6 +14,8 @@ Reuse Scout is an instruction-only skill that uses the host's existing tools. On
 
 Its workflow draws on [PavedPath Code](https://github.com/Jia-Ethan/pavedpath-code) and [ECC search-first](https://github.com/affaan-m/ECC/tree/main/skills/search-first), adapted for explicit invocation. It does not include the full ECC framework or claim better results than its sources. See the [upstream review](docs/UPSTREAM_REVIEW.md) (Chinese) for pinned references and design choices.
 
+![Reuse-Scout](docs/images/cartoon-infographic.png)
+
 ## Install
 
 ```text

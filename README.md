@@ -16,6 +16,8 @@
 
 参考并面向手动调用整合 [PavedPath Code](https://github.com/Jia-Ethan/pavedpath-code) 与 [ECC search-first](https://github.com/affaan-m/ECC/tree/main/skills/search-first)，未引入完整 ECC，也未证明效果优于上游。固定来源和取舍见 [上游核对](docs/UPSTREAM_REVIEW.md)。
 
+![Reuse-Scout](docs/images/cartoon-infographic.png)
+
 ## 安装
 
 ```text
